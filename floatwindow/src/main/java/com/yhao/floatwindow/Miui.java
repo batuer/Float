@@ -76,6 +76,7 @@ class Miui {
                     }
                     mPermissionListenerList.clear();
                 }
+
                 @Override
                 public void onFail() {
                     for (PermissionListener listener : mPermissionListenerList) {

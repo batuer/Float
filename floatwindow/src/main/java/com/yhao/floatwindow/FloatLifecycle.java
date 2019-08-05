@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
-import android.widget.Toast;
 
 /**
  * Created by yhao on 17-12-1.
@@ -35,7 +34,8 @@ class FloatLifecycle extends BroadcastReceiver implements Application.ActivityLi
     private static int num = 0;
 
 
-    FloatLifecycle(Context applicationContext, boolean showFlag, Class[] activities, LifecycleListener lifecycleListener) {
+    FloatLifecycle(Context applicationContext, boolean showFlag, Class[] activities,
+                   LifecycleListener lifecycleListener) {
         this.showFlag = showFlag;
         this.activities = activities;
         num++;

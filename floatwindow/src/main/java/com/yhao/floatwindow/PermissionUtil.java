@@ -17,9 +17,9 @@ import java.lang.reflect.Method;
  * https://github.com/yhaolpz
  */
 
-class PermissionUtil {
+public class PermissionUtil {
 
-    static boolean hasPermission(Context context) {
+    public static boolean hasPermission(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return Settings.canDrawOverlays(context);
         } else {
@@ -27,7 +27,7 @@ class PermissionUtil {
         }
     }
 
-    static boolean hasPermissionOnActivityResult(Context context) {
+    public static boolean hasPermissionOnActivityResult(Context context) {
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
             return hasPermissionForO(context);
         }
@@ -43,13 +43,16 @@ class PermissionUtil {
      * 理论上6.0以上才需处理权限，但有的国内rom在6.0以下就添加了权限
      * 其实此方式也可以用于判断6.0以上版本，只不过有更简单的canDrawOverlays代替
      */
-    static boolean hasPermissionBelowMarshmallow(Context context) {
+    public static boolean hasPermissionBelowMarshmallow(Context context) {
         try {
-            AppOpsManager manager = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
-            Method dispatchMethod = AppOpsManager.class.getMethod("checkOp", int.class, int.class, String.class);
-            //AppOpsManager.OP_SYSTEM_ALERT_WINDOW = 24
-            return AppOpsManager.MODE_ALLOWED == (Integer) dispatchMethod.invoke(
-                    manager, 24, Binder.getCallingUid(), context.getApplicationContext().getPackageName());
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                AppOpsManager manager = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+                Method dispatchMethod = AppOpsManager.class.getMethod("checkOp", int.class, int.class, String.class);
+                return AppOpsManager.MODE_ALLOWED == (Integer) dispatchMethod.invoke(
+                        manager, 24, Binder.getCallingUid(), context.getApplicationContext().getPackageName());
+            } else {
+                return true;
+            }
         } catch (Exception e) {
             return false;
         }
@@ -61,14 +64,15 @@ class PermissionUtil {
      * 针对8.0官方bug:在用户授予权限后Settings.canDrawOverlays或checkOp方法判断仍然返回false
      */
     @RequiresApi(api = Build.VERSION_CODES.M)
-    private static boolean hasPermissionForO(Context context) {
+    public static boolean hasPermissionForO(Context context) {
         try {
             WindowManager mgr = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
             if (mgr == null) return false;
             View viewToAdd = new View(context);
             WindowManager.LayoutParams params = new WindowManager.LayoutParams(0, 0,
                     android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ?
-                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
+                            WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSPARENT);
             viewToAdd.setLayoutParams(params);
@@ -80,6 +84,4 @@ class PermissionUtil {
         }
         return false;
     }
-
-
 }
